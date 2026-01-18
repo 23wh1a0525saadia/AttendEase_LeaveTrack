@@ -1,0 +1,204 @@
+<!-- templates/admin.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - BVRITH LeaveTrack</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(to right, #7F00FF, #E100FF);
+            color: #fff;
+            min-height: 100vh;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 32px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+        .controls input,
+        .controls select {
+            padding: 10px;
+            border-radius: 6px;
+            border: none;
+            width: 220px;
+            font-size: 14px;
+        }
+        .leave-card {
+            background: #fff;
+            color: #333;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px auto;
+            max-width: 600px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+        .leave-card h3 {
+            margin: 0 0 10px;
+            font-size: 20px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            margin-top: 6px;
+        }
+        .status-badge.Pending {
+            background-color: #ffc107;
+            color: #000;
+        }
+        .status-badge.Approved {
+            background-color: #28a745;
+            color: #fff;
+        }
+        .status-badge.Rejected {
+            background-color: #dc3545;
+            color: #fff;
+        }
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-right: 10px;
+            transition: 0.2s ease;
+        }
+        .approve {
+            background-color: #28a745;
+        }
+        .approve:hover {
+            background-color: #218838;
+        }
+        .reject {
+            background-color: #dc3545;
+        }
+        .reject:hover {
+            background-color: #c82333;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        #leave-requests-container {
+            margin-top: 20px;
+        }
+        .loading {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    {% include 'navbar.html' %}
+    <h2>Admin Dashboard</h2>
+
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="Search by name or email">
+        <select id="statusFilter">
+            <option value="">All Statuses</option>
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+        </select>
+    </div>
+
+    <div id="leave-requests-container" class="loading">Loading leave requests...</div>
+
+    <script>
+        const backendUrl = "http://localhost:5000";
+        let leaveRequests = [];
+
+        function fetchLeaveRequests() {
+            document.getElementById("leave-requests-container").innerHTML = "<div class='loading'>Loading leave requests...</div>";
+
+            fetch(`${backendUrl}/admin/dashboard`)
+                .then(res => res.json())
+                .then(data => {
+                    leaveRequests = data;
+                    renderLeaveRequests(data);
+                })
+                .catch(err => {
+                    document.getElementById("leave-requests-container").innerHTML = "<p>Error loading leave requests.</p>";
+                });
+        }
+
+        function renderLeaveRequests(data) {
+            const container = document.getElementById("leave-requests-container");
+            container.innerHTML = "";
+
+            if (data.length === 0) {
+                container.innerHTML = "<p style='text-align:center;'>No leave requests found.</p>";
+                return;
+            }
+
+            data.forEach(request => {
+                const card = document.createElement("div");
+                card.className = "leave-card";
+                card.innerHTML = `
+                    <h3>${request.name} (${request.email})</h3>
+                    <p><strong>From:</strong> ${request.date_from}</p>
+                    <p><strong>To:</strong> ${request.date_to}</p>
+                    <p><strong>Location:</strong> ${request.location}</p>
+                    <p><strong>Reason:</strong> ${request.reason}</p>
+                    <p><strong>Status:</strong> <span class="status-badge ${request.status}">${request.status}</span></p>
+                    <p><a href="${backendUrl}/uploads/${request.permission_letter}" target="_blank">📄 View Permission Letter</a></p>
+                    <div style="margin-top: 15px;">
+                        <button class="btn approve" onclick="handleDecision(${request.id}, 'Approved')">Approve</button>
+                        <button class="btn reject" onclick="handleDecision(${request.id}, 'Rejected')">Reject</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function handleDecision(leaveId, status) {
+            fetch(`${backendUrl}/admin/handle-request`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ leave_id: leaveId, status })
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message || data.error);
+                fetchLeaveRequests();
+            });
+        }
+
+        document.getElementById("searchInput").addEventListener("input", filterRequests);
+        document.getElementById("statusFilter").addEventListener("change", filterRequests);
+
+        function filterRequests() {
+            const search = document.getElementById("searchInput").value.toLowerCase();
+            const status = document.getElementById("statusFilter").value;
+
+            const filtered = leaveRequests.filter(req => {
+                const matchSearch = req.name.toLowerCase().includes(search) || req.email.toLowerCase().includes(search);
+                const matchStatus = status === "" || req.status === status;
+                return matchSearch && matchStatus;
+            });
+
+            renderLeaveRequests(filtered);
+        }
+
+        window.onload = fetchLeaveRequests;
+    </script>
+</body>
+</html>

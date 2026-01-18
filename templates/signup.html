@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sign Up - BVRITH LeaveTrack</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to right, #ff0080, #8000ff);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .branding {
+      position: absolute;
+      top: 20px;
+      left: 30px;
+      color: white;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .form-box {
+      background: white;
+      padding: 30px 25px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    h2 {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #222;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    input:focus {
+      border-color: #8000ff;
+      outline: none;
+      box-shadow: 0 0 5px rgba(128, 0, 255, 0.3);
+    }
+
+    .signup-btn {
+      background: linear-gradient(to right, #ff0080, #8000ff);
+      color: white;
+      border: none;
+      width: 100%;
+      padding: 12px;
+      font-size: 15px;
+      font-weight: bold;
+      border-radius: 8px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    .signup-btn:hover {
+      opacity: 0.9;
+    }
+
+    .login-link {
+      text-align: center;
+      margin-top: 14px;
+      font-size: 14px;
+    }
+
+    .login-link a {
+      color: #8000ff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="branding">BVRITH LeaveTrack</div>
+
+  <div class="form-box">
+    <h2>Sign Up</h2>
+    <form id="signupForm">
+      <input type="text" name="name" placeholder="Name" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="text" name="roll_no" placeholder="Roll No" required>
+      <input type="text" name="branch" placeholder="Branch" required>
+      <input type="text" name="year" placeholder="Year" required>
+      <input type="text" name="section" placeholder="Section" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+      <button type="submit" class="signup-btn">Create Account</button>
+      <div class="login-link">
+        Already have an account? <a href="/login">Login</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const backendUrl = "http://localhost:5000";
+
+    document.getElementById("signupForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+
+      const password = formData.get("password");
+      const confirmPassword = formData.get("confirm_password");
+
+      if (password !== confirmPassword) {
+        alert("❌ Passwords do not match!");
+        return;
+      }
+
+      fetch(`${backendUrl}/signup`, {
+        method: "POST",
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          alert("⚠️ " + data.error);
+        } else {
+          alert("✅ Account created successfully!");
+          window.location.href = "/login";
+        }
+      })
+      .catch(err => {
+        alert("⚠️ Signup failed. Please try again.");
+        console.error("Signup error:", err);
+      });
+    });
+  </script>
+
+</body>
+</html>

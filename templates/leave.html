@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leave Request</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Changed height to min-height */
+            background: linear-gradient(135deg, #ff0080, #8000ff);
+            margin: 0;
+            color: white; /* Added default text color */
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            width: 450px;
+            text-align: center;
+            color: #333;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h3 {
+            background: linear-gradient(135deg, #ff0080, #8000ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 25px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="date"],
+        input[type="text"],
+        textarea,
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box; /* Ensure padding doesn't increase width */
+            color: #333;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #ff0080, #8000ff);
+            color: white;
+            padding: 15px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 12px;
+            margin-top: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 0, 128, 0.3);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 0, 128, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h3>Leave Request Form</h3>
+        <form id="leaveForm" enctype="multipart/form-data">
+            <div>
+                <label for="from_date">From Date:</label>
+                <input type="date" class="form-control" name="from" id="from_date" required>
+            </div>
+            <div>
+                <label for="to_date">To Date:</label>
+                <input type="date" class="form-control" name="to" id="to_date" required>
+            </div>
+            <div>
+                <label for="location">Location:</label>
+                <input type="text" class="form-control" name="location" id="location" required>
+            </div>
+            <div>
+                <label for="reason">Reason:</label>
+                <textarea class="form-control" name="reason" id="reason" required></textarea>
+            </div>
+            <div>
+                <label for="permission">Upload Permission Letter:</label>
+                <input type="file" class="form-control" name="permission" id="permission" required>
+            </div>
+            <input type="hidden" name="email" id="userEmail">
+            <button type="submit" class="btn btn-success w-100">Submit</button>
+        </form>
+    </div>
+
+    <script>
+        // Get user email from localStorage
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user && user.email) {
+            document.getElementById('userEmail').value = user.email;
+        } else {
+            alert('User not logged in');
+            window.location.href = '/';
+        }
+
+        // Handle leave request submission
+        document.getElementById('leaveForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = new FormData(this);
+
+            fetch('/leave', {
+                method: 'POST',
+                body: form
+            }).then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url; // Redirect to /history
+                    return null; // Indicate that we've redirected and don't need to process data
+                } else {
+                    return response.json(); // Parse JSON for error messages
+                }
+            }).then(data => {
+                if (data && data.message) {
+                    alert(data.message);
+                    if (data.message.toLowerCase().includes('success')) {
+                        window.location.href = '/history'; // Redundant but can stay for extra safety
+                    }
+                } else if (data !== null && !window.location.href.includes('history.html')) {
+                    alert('Something went wrong. Please try again.'); // Generic error if no message and not redirected
+                }
+            }).catch(err => {
+                alert('Something went wrong. Please try again.');
+                console.error("Fetch error:", err);
+            });
+        });
+    </script>
+</body>
+</html>

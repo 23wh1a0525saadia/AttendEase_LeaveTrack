@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Dashboard - BVRITH LeaveTrack</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #ff0080, #8000ff);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 80px;
+      color: #222;
+    }
+
+    .branding {
+      position: absolute;
+      top: 20px;
+      left: 30px;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .dashboard-box {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 40px 30px;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 550px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    h2 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 25px;
+      color: #333;
+      background: linear-gradient(135deg, #ff0080, #8000ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .profile-info p {
+      margin-bottom: 12px;
+      font-size: 16px;
+      color: #555;
+    }
+
+    .profile-info strong {
+      color: #ff0080;
+    }
+
+    .options {
+      margin-top: 30px;
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    .options button,
+    .logout-btn {
+      flex: 1;
+      background: linear-gradient(135deg, #ff0080, #8000ff);
+      color: white;
+      border: none;
+      padding: 15px 20px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(255, 0, 128, 0.3);
+    }
+
+    .options button:hover,
+    .logout-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 0, 128, 0.4);
+    }
+
+    .options button i,
+    .logout-btn i {
+      margin-right: 8px;
+    }
+
+    .logout-btn {
+      margin-top: 25px;
+      background: linear-gradient(135deg, #ff4500, #ff0080);
+      box-shadow: 0 4px 15px rgba(255, 69, 0, 0.3);
+    }
+
+    .logout-btn:hover {
+      box-shadow: 0 6px 20px rgba(255, 69, 0, 0.4);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="branding">BVRITH LeaveTrack</div>
+
+  <div class="dashboard-box">
+    <h2>Welcome, <span id="userName">User</span></h2>
+
+    <div class="profile-info">
+      <p><strong>Email:</strong> <span id="email"></span></p>
+      <p><strong>Roll Number:</strong> <span id="roll_number"></span></p>
+      <p><strong>Branch:</strong> <span id="branch"></span></p>
+      <p><strong>Year:</strong> <span id="year"></span></p>
+      <p><strong>Section:</strong> <span id="section"></span></p>
+    </div>
+
+    <div class="options">
+      <button onclick="window.location.href='/leave'"><i class="fas fa-plus-circle"></i> Apply Leave</button>
+      <button onclick="window.location.href='/history'"><i class="fas fa-history"></i> Leave History</button>
+    </div>
+
+    <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+  </div>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+      alert('You are not logged in');
+      window.location.href = '/';
+    }
+
+    document.getElementById('userName').innerText = user.name;
+    document.getElementById('email').innerText = user.email;
+    document.getElementById('roll_number').innerText = user.roll_number;
+    document.getElementById('branch').innerText = user.branch;
+    document.getElementById('year').innerText = user.year;
+    document.getElementById('section').innerText = user.section;
+
+    function logout() {
+      localStorage.removeItem('user');
+      window.location.href = '/logout';
+    }
+  </script>
+
+</body>
+</html>

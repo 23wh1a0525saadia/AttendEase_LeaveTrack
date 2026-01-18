@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Leave History - BVRITH LeaveTrack</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #ff0080, #8000ff);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .branding {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .table-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            overflow-x: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border-bottom: 1px solid #ddd;
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .status-pending {
+            color: orange;
+            font-weight: bold;
+        }
+
+        .status-approved {
+            color: green;
+            font-weight: bold;
+        }
+
+        .status-rejected {
+            color: red;
+            font-weight: bold;
+        }
+
+        .no-requests {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+        }
+
+        .button-container {
+            margin-top: 20px;
+        }
+
+        .button-link {
+            background: linear-gradient(135deg, #00c853, #b2ff59);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            margin-right: 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 200, 83, 0.3);
+        }
+
+        .button-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 200, 83, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="branding">BVRITH LeaveTrack</div>
+
+    <div class="table-container">
+        <h2>Your Leave History</h2>
+        {% if leaves %}
+        <table>
+            <thead>
+                <tr>
+                    <th>From Date</th>
+                    <th>To Date</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Permission Letter</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for leave in leaves %}
+                <tr>
+                    <td>{{ leave.date_from }}</td>
+                    <td>{{ leave.date_to }}</td>
+                    <td>{{ leave.reason }}</td>
+                    <td class="status-{{ leave.status.lower() }}">{{ leave.status }}</td>
+                    <td>
+                        {% if leave.permission_letter %}
+                        <a href="/uploads/{{ leave.permission_letter }}" target="_blank">View</a>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="no-requests">No leave history found.</p>
+        {% endif %}
+    </div>
+
+    <div class="button-container">
+        <a href="/leave" class="button-link"><i class="fas fa-plus-circle"></i> Request New Leave</a>
+        <a href="/logout" class="button-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
+</body>
+</html>

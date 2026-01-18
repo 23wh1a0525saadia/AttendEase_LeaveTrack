@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - Leave Requests</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #ff0080, #8000ff);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .branding {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .table-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            overflow-x: auto;
+            width: 95%;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border-bottom: 1px solid #ddd;
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .status-pending {
+            color: orange;
+            font-weight: bold;
+        }
+
+        .status-approved {
+            color: green;
+            font-weight: bold;
+        }
+
+        .status-rejected {
+            color: red;
+            font-weight: bold;
+        }
+
+        .action-buttons button {
+            background: linear-gradient(135deg, #00c853, #b2ff59);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin-right: 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 200, 83, 0.3);
+        }
+
+        .action-buttons button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 200, 83, 0.4);
+        }
+
+        .reject-btn {
+            background: linear-gradient(135deg, #ff4500, #ff0080);
+            box-shadow: 0 2px 8px rgba(255, 69, 0, 0.3);
+        }
+
+        .reject-btn:hover {
+            box-shadow: 0 4px 12px rgba(255, 69, 0, 0.4);
+        }
+
+        .action-buttons button.reject {
+            background: linear-gradient(to right, #f44336, #ff8a80); /* Reject button color */
+        }
+
+        .action-buttons button:hover {
+            opacity: 0.9;
+        }
+
+        .no-requests {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+        }
+
+        .logout-container {
+            text-align: center; /* Center the logout button */
+        }
+
+        .logout-button {
+            background: linear-gradient(135deg, #ff4500, #ff0080);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 69, 0, 0.3);
+        }
+
+        .logout-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 69, 0, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="branding">BVRITH LeaveTrack Admin</div>
+
+    <div class="table-container">
+        {% if leave_requests %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Permission Letter</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in leave_requests %}
+                <tr>
+                    <td>{{ request.id }}</td>
+                    <td>{{ request.name }}</td>
+                    <td>{{ request.email }}</td>
+                    <td>{{ request.date_from }}</td>
+                    <td>{{ request.date_to }}</td>
+                    <td>{{ request.reason }}</td>
+                    <td class="status-{{ request.status.lower() }}">{{ request.status }}</td>
+                    <td>
+                        {% if request.permission_letter %}
+                        <a href="/uploads/{{ request.permission_letter }}" target="_blank">View</a>
+                        {% else %}
+                        No file
+                        {% endif %}
+                    </td>
+                    <td class="action-buttons">
+                        {% if request.status == 'Pending' %}
+                        <button onclick="handleLeaveRequest({{ request.id }}, 'Approved')">Approve</button>
+                        <button class="reject" onclick="handleLeaveRequest({{ request.id }}, 'Rejected')">Reject</button>
+                        {% else %}
+                        {{ request.status }}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p class="no-requests">No leave requests found.</p>
+        {% endif %}
+    </div>
+
+    <div class="logout-container">
+        <a href="/logout" class="logout-button"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
+
+    <script>
+        const backendUrl = "http://127.0.0.1:5000";
+
+        function handleLeaveRequest(leaveId, status) {
+            fetch(`${backendUrl}/admin/handle-request`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ leave_id: leaveId, status: status })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    alert(data.message);
+                    window.location.reload();
+                } else if (data.error) {
+                    alert(data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error handling leave request:', error);
+                alert('Error handling leave request.');
+            });
+        }
+    </script>
+
+</body>
+</html>
